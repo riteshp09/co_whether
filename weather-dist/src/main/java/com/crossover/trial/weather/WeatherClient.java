@@ -28,6 +28,12 @@ public class WeatherClient {
         query = client.target(BASE_URI + "/query");
         collect = client.target(BASE_URI + "/collect");
     }
+    
+    public void getAriport() {
+    	 WebTarget path = collect.path("/airports");
+         Response response = path.request().get();
+         System.out.print("collect.getAirport: " + response.readEntity(String.class) + "\n");
+    }
 
     public void pingCollect() {
         WebTarget path = collect.path("/ping");
@@ -52,6 +58,7 @@ public class WeatherClient {
         DataPoint dp = new DataPoint.Builder()
                 .withFirst(first).withLast(last).withMean(mean).withMedian(median).withCount(count)
                 .build();
+        System.out.println(dp);
         Response post = path.request().post(Entity.entity(dp, "application/json"));
     }
 
@@ -75,8 +82,9 @@ public class WeatherClient {
         wc.query("MMU");
 
         wc.pingQuery();
-        wc.exit();
+//        wc.exit();
         System.out.print("complete");
-        System.exit(0);
+        wc.getAriport();
+//        System.exit(0);
     }
 }
