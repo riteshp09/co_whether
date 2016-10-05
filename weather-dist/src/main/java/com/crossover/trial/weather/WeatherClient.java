@@ -29,6 +29,18 @@ public class WeatherClient {
         collect = client.target(BASE_URI + "/collect");
     }
     
+    public void addAirport(String iata, double lat, double lon) {
+    	WebTarget path = collect.path("/airport/" + iata + "/" + lat + "/" + lon);
+        Response response = path.request().post(Entity.entity("", "application/json"));
+        System.out.print("collect.addairport: " + response.readEntity(String.class) + "\n");
+    }
+    
+    public void deleteAirport(String iata) {
+    	 WebTarget path = collect.path("/airport/" + iata);
+         Response response = path.request().delete();
+         System.out.print("collect.getAirport: " + response.readEntity(String.class) + "\n");
+    }
+    
     public void getAriport() {
     	 WebTarget path = collect.path("/airports");
          Response response = path.request().get();
@@ -83,8 +95,13 @@ public class WeatherClient {
 
         wc.pingQuery();
 //        wc.exit();
-        System.out.print("complete");
+        /*System.out.print("complete");
         wc.getAriport();
+        System.out.println("Deleting Airport  BOS");
+        wc.deleteAirport("BOS");*/
+        wc.addAirport("MUM", 40, 100);
+        wc.getAriport();
+        
 //        System.exit(0);
     }
 }

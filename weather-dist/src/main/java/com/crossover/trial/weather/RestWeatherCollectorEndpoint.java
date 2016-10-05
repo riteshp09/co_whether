@@ -1,15 +1,18 @@
 package com.crossover.trial.weather;
 
-import com.google.gson.Gson;
+import static com.crossover.trial.weather.RestWeatherQueryEndpoint.airportData;
+import static com.crossover.trial.weather.RestWeatherQueryEndpoint.atmosphericInformation;
+import static com.crossover.trial.weather.RestWeatherQueryEndpoint.findAirportData;
+import static com.crossover.trial.weather.RestWeatherQueryEndpoint.getAirportDataIdx;
 
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import static com.crossover.trial.weather.RestWeatherQueryEndpoint.*;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
+
+import com.google.gson.Gson;
 
 /**
  * A REST implementation of the WeatherCollector API. Accessible only to airport weather collection
@@ -31,8 +34,8 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
     }
 
     @Override
-    public Response updateWeather(@PathParam("iata") String iataCode,
-                                  @PathParam("pointType") String pointType,
+    public Response updateWeather(String iataCode,
+                                  String pointType,
                                   String datapointJson) {
         try {
             addDataPoint(iataCode, pointType, gson.fromJson(datapointJson, DataPoint.class));
@@ -54,24 +57,25 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
 
 
     @Override
-    public Response getAirport(@PathParam("iata") String iata) {
+    public Response getAirport(String iata) {
         AirportData ad = findAirportData(iata);
         return Response.status(Response.Status.OK).entity(ad).build();
     }
 
 
     @Override
-    public Response addAirport(@PathParam("iata") String iata,
-                               @PathParam("lat") String latString,
-                               @PathParam("long") String longString) {
+    public Response addAirport(String iata,
+                               String latString,
+                               String longString) {
         addAirport(iata, Double.valueOf(latString), Double.valueOf(longString));
         return Response.status(Response.Status.OK).build();
     }
 
 
     @Override
-    public Response deleteAirport(@PathParam("iata") String iata) {
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response deleteAirport(String iata) {
+    	removeAirport(iata);
+        return Response.status(Response.Status.OK).build();
     }
 
     @Override
@@ -167,8 +171,17 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
 			atmosphericInformation.add(ai);
 			ad.setIata(iataCode);
 			ad.setLatitude(latitude);
-			ad.setLatitude(longitude);
+			ad.setLongitude(longitude);
 			return ad;
 		}
     }
+    
+    public static void removeAirport(String iata) {
+    	synchronized (airportData) {
+			int idx = getAirportDataIdx(iata);
+			airportData.remove(idx);
+			atmosphericInformation.remove(idx);
+		}
+    }
+
 }

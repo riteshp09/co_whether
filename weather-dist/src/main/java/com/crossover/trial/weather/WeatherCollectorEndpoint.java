@@ -53,7 +53,7 @@ public interface WeatherCollectorEndpoint {
      * @return an HTTP Response with a json representation of {@link AirportData}
      */
     @GET
-    @Path("/airport/{iata}")
+    @Path("/airport/get/{iata}")
     @Produces(MediaType.APPLICATION_JSON)
     Response getAirport(@PathParam("iata") String iata);
 
@@ -84,4 +84,5 @@ public interface WeatherCollectorEndpoint {
     @GET
     @Path("/exit")
     Response exit();
+    
 }

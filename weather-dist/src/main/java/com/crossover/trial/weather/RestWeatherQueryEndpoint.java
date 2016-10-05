@@ -43,7 +43,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
     public static Map<Double, Integer> radiusFreq = new HashMap<Double, Integer>();
 
     static {
-        init();
+//        init();
     }
     /**
      * Retrieve service health including total size of valid data points and request frequency information.

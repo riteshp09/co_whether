@@ -1,13 +1,17 @@
 package com.crossover.trial.weather;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
-
-import java.io.*;
-import java.util.StringTokenizer;
 
 /**
  * A simple airport loader which reads a file from disk and sends entries to the webservice
@@ -40,32 +44,19 @@ public class AirportLoader {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(airportDataStream));
 		String l = null;
 		while ((l = reader.readLine()) != null) {
-			AirportData aData = new AirportData();
 			String[] data = l.split(",");
-			aData.setId(data[0]);
-			aData.setAirtportName(data[1]);
-			aData.setCity(data[2]);
-			aData.setCountry(data[3]);
-			aData.setIata(data[4]);
-			aData.setIcao(data[5]);
-			aData.setLatitude(Double.valueOf(data[6]));
-			aData.setLongitude(Double.valueOf(data[7]));
-			aData.setAltitude(Double.valueOf(data[8]));
-			aData.setTimezone(Integer.valueOf(data[9]));
-			aData.setDst(data[10]);
-			
-			uploadAirportData(aData);
+			uploadAirportData( data[4], data[6], data[7]);
 		}
 	}
 	
-	protected void uploadAirportData(AirportData ad) {
-	        WebTarget path = collect.path("/airport/" + ad.getIata() + "/" + ad.getLatitude() + "/" + ad.getLongitude());
+	protected void uploadAirportData(String iata, String latitude, String longitude) {
+	        WebTarget path = collect.path("/airport/" + iata + "/" + latitude + "/" + longitude);
 	        Response post = path.request().post(Entity.entity("", "application/json"));
-	        System.out.print("collect.ping: " + post.readEntity(String.class) + "\n");
+	        System.out.print("collect.addairport: " + post.readEntity(String.class) + "\n");
 	}
 
 	public static void main(String args[]) throws IOException{
-		File airportDataFile = new File("D:\\RP00425428\\Projects\\personal_projects\\co_whether\\weather-dist\\src\\main\\resources\\airports.dat");
+		File airportDataFile = new File("C:\\Users\\Frey\\Documents\\co_whether\\weather-dist\\src\\main\\resources\\airports.dat");
 		if (!airportDataFile.exists() || airportDataFile.length() == 0) {
 			System.err.println(airportDataFile + " is not a valid input");
 			System.exit(1);
