@@ -89,8 +89,8 @@ public class WeatherClient {
         wc.query("MMU");
 
         wc.pingQuery();
-//        wc.exit();
+        wc.exit();
         System.out.print("complete");
-//        System.exit(0);
+        System.exit(0);
     }
 }

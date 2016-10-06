@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -74,6 +75,28 @@ public class WeatherEndpointTest {
         List<AtmosphericInformation> ais = (List<AtmosphericInformation>) _query.weather("BOS", "0").getEntity();
         assertEquals(ais.get(0).getWind(), windDp);
         assertEquals(ais.get(0).getCloudCover(), cloudCoverDp);
+    }
+    
+    @Test
+    public void testAddAirport() throws Exception {
+    	Set<String> airports = (Set<String>) _update.getAirports().getEntity();
+    	int iniSize = airports.size();
+    	_update.addAirport("MUM", "19.0896", "72.8656");
+    	airports = (Set<String>) _update.getAirports().getEntity();
+    	assertEquals(iniSize+1, airports.size());
+    	AirportData ad = (AirportData) _update.getAirport("MUM").getEntity();
+    	assertEquals("MUM", ad.getIata());
+    }
+    
+    @Test
+    public void testDeleteAirport() throws Exception {
+    	Set<String> airports = (Set<String>) _update.getAirports().getEntity();
+    	int iniSize = airports.size();
+    	for (String iata : airports) {
+    		_update.deleteAirport(iata);
+		}
+    	airports = (Set<String>) _update.getAirports().getEntity();
+    	assertEquals(0, airports.size());
     }
 
 }
