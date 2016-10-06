@@ -1,9 +1,6 @@
 package com.crossover.trial.weather;
 
-import static com.crossover.trial.weather.RestWeatherQueryEndpoint.airportData;
-import static com.crossover.trial.weather.RestWeatherQueryEndpoint.atmosphericInformation;
-import static com.crossover.trial.weather.RestWeatherQueryEndpoint.findAirportData;
-import static com.crossover.trial.weather.RestWeatherQueryEndpoint.getAirportDataIdx;
+import static com.crossover.trial.weather.RestWeatherQueryEndpoint.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -97,8 +94,8 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
      * @throws WeatherException if the update can not be completed
      */
     public void addDataPoint(String iataCode, String pointType, DataPoint dp) throws WeatherException {
-        int airportDataIdx = getAirportDataIdx(iataCode);
-        AtmosphericInformation ai = atmosphericInformation.get(airportDataIdx);
+    	AirportData ad = findAirportData(iataCode);
+        AtmosphericInformation ai = ad.getAtmosphericInformation();
         updateAtmosphericInformation(ai, pointType, dp);
     }
 
@@ -168,7 +165,7 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
         	AirportData ad = new AirportData();
 			airportData.add(ad);
 			AtmosphericInformation ai = new AtmosphericInformation();
-			atmosphericInformation.add(ai);
+			ad.setAtmosphericInformation(ai);
 			ad.setIata(iataCode);
 			ad.setLatitude(latitude);
 			ad.setLongitude(longitude);
@@ -180,7 +177,6 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
     	synchronized (airportData) {
 			int idx = getAirportDataIdx(iata);
 			airportData.remove(idx);
-			atmosphericInformation.remove(idx);
 		}
     }
 

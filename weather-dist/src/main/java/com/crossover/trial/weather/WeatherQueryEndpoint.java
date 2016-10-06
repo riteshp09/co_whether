@@ -40,3 +40,4 @@ public interface WeatherQueryEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     Response weather(@PathParam("iata") String iata, @PathParam("radius") String radiusString);
 }
+

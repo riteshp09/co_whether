@@ -1,13 +1,19 @@
 package com.crossover.trial.weather;
 
-import com.google.gson.Gson;
+import static com.crossover.trial.weather.RestWeatherCollectorEndpoint.addAirport;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
-import java.util.*;
-import java.util.logging.Logger;
 
-import static com.crossover.trial.weather.RestWeatherCollectorEndpoint.addAirport;
+import com.google.gson.Gson;
 
 /**
  * The Weather App REST endpoint allows clients to query, update and check health stats. Currently, all data is
@@ -27,10 +33,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
     public static final Gson gson = new Gson();
 
     /** all known airports */
-    protected static List<AirportData> airportData = new ArrayList<>();
-
-    /** atmospheric information for each airport, idx corresponds with airportData */
-    protected static List<AtmosphericInformation> atmosphericInformation = new LinkedList<>();
+    protected static List<AirportData> airportData = new LinkedList<AirportData>();
 
     /**
      * Internal performance counter to better understand most requested information, this map can be improved but
@@ -53,9 +56,11 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
     @Override
     public String ping() {
         Map<String, Object> retval = new HashMap<>();
+        Map<String, Double> freq = new HashMap<>();
 
         int datasize = 0;
-        for (AtmosphericInformation ai : atmosphericInformation) {
+        for (AirportData ad : airportData) {
+        	AtmosphericInformation ai = ad.getAtmosphericInformation();
             // we only count recent readings
             if (ai.getCloudCover() != null
                 || ai.getHumidity() != null
@@ -68,15 +73,10 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
                     datasize++;
                 }
             }
+            double frac = (double)requestFrequency.getOrDefault(ad, 0) / requestFrequency.size();
+            freq.put(ad.getIata(), frac);
         }
         retval.put("datasize", datasize);
-
-        Map<String, Double> freq = new HashMap<>();
-        // fraction of queries
-        for (AirportData data : airportData) {
-            double frac = (double)requestFrequency.getOrDefault(data, 0) / requestFrequency.size();
-            freq.put(data.getIata(), frac);
-        }
         retval.put("iata_freq", freq);
 
         int m = radiusFreq.keySet().stream()
@@ -84,6 +84,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
                 .orElse(1000.0).intValue() + 1;
 
         int[] hist = new int[m];
+        
         for (Map.Entry<Double, Integer> e : radiusFreq.entrySet()) {
             int i = e.getKey().intValue() % 10;
             hist[i] += e.getValue();
@@ -109,19 +110,19 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
 
         List<AtmosphericInformation> retval = new ArrayList<>();
         if (radius == 0) {
-            int idx = getAirportDataIdx(iata);
-            retval.add(atmosphericInformation.get(idx));
+        	AirportData ad = findAirportData(iata);
+            retval.add(ad.getAtmosphericInformation());
         } else {
             AirportData ad = findAirportData(iata);
-            for (int i=0;i< airportData.size(); i++){
-                if (calculateDistance(ad, airportData.get(i)) <= radius){
-                    AtmosphericInformation ai = atmosphericInformation.get(i);
+            for (AirportData airportData : airportData) {
+            	if (calculateDistance(ad, airportData) <= radius){
+            		AtmosphericInformation ai = airportData.getAtmosphericInformation();
                     if (ai.getCloudCover() != null || ai.getHumidity() != null || ai.getPrecipitation() != null
                        || ai.getPressure() != null || ai.getTemperature() != null || ai.getWind() != null){
                         retval.add(ai);
                     }
-                }
-            }
+            	}
+			}
         }
         return Response.status(Response.Status.OK).entity(retval).build();
     }
@@ -183,7 +184,6 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
      */
     protected static void init() {
         airportData.clear();
-        atmosphericInformation.clear();
         requestFrequency.clear();
 
         addAirport("BOS", 42.364347, -71.005181);

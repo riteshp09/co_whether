@@ -1,7 +1,5 @@
 package com.crossover.trial.weather;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -14,59 +12,56 @@ import javax.ws.rs.core.Response;
  * @author code test administrator
  */
 public class WeatherClient {
+	
+	private static StringBuffer pathStr = new StringBuffer();
 
-    private static final String BASE_URI = "http://localhost:9090";
-
-    /** end point for read queries */
-    private WebTarget query;
-
-    /** end point to supply updates */
-    private WebTarget collect;
-
-    public WeatherClient() {
-        Client client = ClientBuilder.newClient();
-        query = client.target(BASE_URI + "/query");
-        collect = client.target(BASE_URI + "/collect");
-    }
-    
     public void addAirport(String iata, double lat, double lon) {
-    	WebTarget path = collect.path("/airport/" + iata + "/" + lat + "/" + lon);
+    	pathStr.replace(0, pathStr.length(), "");
+    	WebTarget path = WeatherClientUtil.getInstance().getCollectWebTarget()
+    			.path(pathStr.append("/airport/").append(iata).append("/").append(lat).append("/").append(lon).toString());
         Response response = path.request().post(Entity.entity("", "application/json"));
         System.out.print("collect.addairport: " + response.readEntity(String.class) + "\n");
     }
     
     public void deleteAirport(String iata) {
-    	 WebTarget path = collect.path("/airport/" + iata);
+    	pathStr.replace(0, pathStr.length(), "");
+    	 WebTarget path = WeatherClientUtil.getInstance().getCollectWebTarget()
+    			 .path(pathStr.append("/airport/").append(iata).toString());
          Response response = path.request().delete();
-         System.out.print("collect.getAirport: " + response.readEntity(String.class) + "\n");
+         System.out.print("collect.deleteAirport: " + response.readEntity(String.class) + "\n");
     }
     
     public void getAriport() {
-    	 WebTarget path = collect.path("/airports");
+    	 WebTarget path = WeatherClientUtil.getInstance().getCollectWebTarget()
+    			 .path("/airports");
          Response response = path.request().get();
          System.out.print("collect.getAirport: " + response.readEntity(String.class) + "\n");
     }
 
     public void pingCollect() {
-        WebTarget path = collect.path("/ping");
+        WebTarget path = WeatherClientUtil.getInstance().getCollectWebTarget()
+        		.path("/ping");
         Response response = path.request().get();
         System.out.print("collect.ping: " + response.readEntity(String.class) + "\n");
     }
 
     public void query(String iata) {
-        WebTarget path = query.path("/weather/" + iata + "/0");
+        WebTarget path = WeatherClientUtil.getInstance().getQueryWebTarget()
+        		.path("/weather/" + iata + "/0");
         Response response = path.request().get();
         System.out.println("query." + iata + ".0: " + response.readEntity(String.class));
     }
 
     public void pingQuery() {
-        WebTarget path = query.path("/ping");
+        WebTarget path = WeatherClientUtil.getInstance().getQueryWebTarget()
+        		.path("/ping");
         Response response = path.request().get();
         System.out.println("query.ping: " + response.readEntity(String.class));
     }
 
     public void populate(String pointType, int first, int last, int mean, int median, int count) {
-        WebTarget path = collect.path("/weather/BOS/" + pointType);
+        WebTarget path = WeatherClientUtil.getInstance().getCollectWebTarget()
+        		.path("/weather/BOS/" + pointType);
         DataPoint dp = new DataPoint.Builder()
                 .withFirst(first).withLast(last).withMean(mean).withMedian(median).withCount(count)
                 .build();
@@ -76,7 +71,7 @@ public class WeatherClient {
 
     public void exit() {
         try {
-            collect.path("/exit").request().get();
+        	WeatherClientUtil.getInstance().getCollectWebTarget().path("/exit").request().get();
         } catch (Throwable t) {
             // swallow
         }
@@ -95,13 +90,7 @@ public class WeatherClient {
 
         wc.pingQuery();
 //        wc.exit();
-        /*System.out.print("complete");
-        wc.getAriport();
-        System.out.println("Deleting Airport  BOS");
-        wc.deleteAirport("BOS");*/
-        wc.addAirport("MUM", 40, 100);
-        wc.getAriport();
-        
+        System.out.print("complete");
 //        System.exit(0);
     }
 }

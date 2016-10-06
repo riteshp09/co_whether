@@ -19,6 +19,8 @@ public class AirportData {
     /** longitude value in degrees */
     double longitude;
     
+    AtmosphericInformation atmosphericInformation;
+    
     public AirportData() { }
 
     public String getIata() {
@@ -45,6 +47,14 @@ public class AirportData {
         this.longitude = longitude;
     }
     
+	public AtmosphericInformation getAtmosphericInformation() {
+		return (atmosphericInformation == null) ? new AtmosphericInformation() : atmosphericInformation;
+	}
+
+	public void setAtmosphericInformation(AtmosphericInformation atmosphericInformation) {
+		this.atmosphericInformation = atmosphericInformation;
+	}
+
 	public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.NO_CLASS_NAME_STYLE);
     }

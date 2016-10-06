@@ -24,17 +24,16 @@ import org.glassfish.jersey.server.ResourceConfig;
  */
 public class WeatherServer {
 
-    private static final String BASE_URL = "http://localhost:9090/";
 
     public static void main(String[] args) {
         try {
-            System.out.println("Starting Weather App local testing server: " + BASE_URL);
+            System.out.println("Starting Weather App local testing server: " + WeatherClientUtil.BASE_URI);
 
             final ResourceConfig resourceConfig = new ResourceConfig();
             resourceConfig.register(RestWeatherCollectorEndpoint.class);
             resourceConfig.register(RestWeatherQueryEndpoint.class);
             
-            HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URL), resourceConfig, true);
+            HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create(WeatherClientUtil.BASE_URI), resourceConfig, true);
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 server.shutdownNow();
             }));
@@ -49,7 +48,7 @@ public class WeatherServer {
 
             // the autograder waits for this output before running automated tests, please don't remove it
             server.start();
-            System.out.println(format("Weather Server started.\n url=%s\n", BASE_URL));
+            System.out.println(format("Weather Server started.\n url=%s\n", WeatherClientUtil.BASE_URI));
 
             // blocks until the process is terminated
             Thread.currentThread().join();
